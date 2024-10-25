@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, createWebHashHistory, RouteRecordRaw } from 'vue-router'
+import {createRouter, createWebHistory, createWebHashHistory, RouteRecordRaw, RouteRecord} from 'vue-router'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import store from '@/store'
@@ -90,6 +90,8 @@ router.beforeEach(async (to, from, next) => {
 
 				// 错误路由
 				router.addRoute(errorRoute)
+				//const routes = router.getRoutes()
+				//console.log(JSON.stringify(routes))
 
 				// 保存路由数据
 				store.routerStore.setRoutes(constantRoutes.concat(asyncRoutes))
@@ -164,6 +166,7 @@ export const generateRoutes = (menuList: any): RouteRecordRaw[] => {
 			component = getDynamicComponent(menu.url)
 			path = '/' + menu.url
 		}
+
 		const route: RouteRecordRaw = {
 			path: path,
 			name: pathToCamel(path),

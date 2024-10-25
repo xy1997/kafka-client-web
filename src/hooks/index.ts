@@ -67,6 +67,7 @@ export const useCrud = (options: IHooksOptions) => {
 	}
 
 	const getDataList = () => {
+		console.log('=====getDataList=====')
 		state.page = 1
 		query()
 	}

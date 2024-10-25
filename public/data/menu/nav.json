@@ -46,6 +46,24 @@
         }
       ]
     },
+
+    {
+      "id": 2,
+      "name": "kafka",
+      "url": null,
+      "openStyle": 0,
+      "icon": "icon-setting",
+      "children": [
+        {
+          "id": 21,
+          "name": "cluster",
+          "url": "cluster/index",
+          "openStyle": 0,
+          "icon": "icon-cluster"
+        }
+      ]
+    },
+
     {
       "id": 3,
       "name": "图表",

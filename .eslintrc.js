@@ -13,6 +13,7 @@ module.exports = {
 		}
 	},
 	rules: {
+		'prettier/prettier': 'off',
 		curly: 'error', // 控制语句需要大括号
 		'vue/multi-word-component-names': 'off'
 	}
