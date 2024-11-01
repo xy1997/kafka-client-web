@@ -15,3 +15,8 @@ export const update = (data: any) => {
 export const detail = (data: any) => {
   return service.get("/kafka/broker/detail?id=" + data);
 };
+
+
+export const loadBroker = () => {
+  return service.get("/kafka/broker/loadBroker");
+};

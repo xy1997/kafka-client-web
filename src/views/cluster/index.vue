@@ -23,13 +23,12 @@
                        show-overflow-tooltip></el-table-column>
       <el-table-column label="brokers" header-align="center" align="center">
         <template #default="scope">
-
-
           <el-popover placement="right" :width="460" trigger="click" @show="showBrokers(scope.row.id)">
             <template #reference>
-              <el-icon size="20">
+<!--              <el-icon size="20">
                 <InfoFilled />
-              </el-icon>
+              </el-icon>-->
+              <el-button type="primary" link >broker</el-button>
             </template>
             <el-table :data="brokersData" v-loading="brokerLoading">
               <el-table-column width="150" property="host" label="host" />
@@ -38,8 +37,12 @@
             </el-table>
           </el-popover>
         </template>
+      </el-table-column>
 
-
+      <el-table-column label="topics" header-align="center" align="center">
+        <template #default="scope">
+            <el-button type="primary" link @click="showTopics(scope.row.id)">topic</el-button>
+        </template>
       </el-table-column>
 
       <el-table-column prop="createdTime" label="创建时间" header-align="center" align="center"
@@ -74,6 +77,8 @@ import AddOrUpdate from "./add-or-update.vue";
 import { IHooksOptions } from "@/hooks/interface";
 import { InfoFilled } from "@element-plus/icons-vue";
 import { describeCluster } from "@/api/kafka/cluster";
+import { useRouter } from 'vue-router'
+
 
 const state: IHooksOptions = reactive({
   dataListUrl: "/kafka/broker/searchPage",
@@ -84,13 +89,13 @@ const state: IHooksOptions = reactive({
   // }
 });
 
-const addOrUpdateRef = ref();
+const addOrUpdateRef = ref()
 //broker 数据
-const brokersData = ref([]);
-const brokerLoading = ref();
+const brokersData = ref([])
+const brokerLoading = ref()
+const router = useRouter()
 
 const addOrUpdateHandle = (id?: number) => {
-  //
   addOrUpdateRef.value.init(id);
 };
 
@@ -107,6 +112,10 @@ const showBrokers = async (id: any) => {
   } finally {
     brokerLoading.value = false;
   }
+};
+
+const showTopics = async (id: any) => {
+   await router.push({ path: '/topic/index',query: { id }})
 };
 
 const { getDataList, selectionChangeHandle, sizeChangeHandle, currentChangeHandle, deleteBatchHandle } = useCrud(state);

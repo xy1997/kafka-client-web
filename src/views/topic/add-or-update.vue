@@ -28,6 +28,7 @@
 import {reactive, ref} from 'vue'
 import {ElMessage} from 'element-plus/es'
 import {addCluster, detail, update} from '@/api/kafka/cluster'
+import store from '@/store'
 import { useRouter } from 'vue-router'
 
 
@@ -35,6 +36,7 @@ const emit = defineEmits(['refreshDataList'])
 
 const visible = ref(false)
 const dataFormRef = ref()
+const router = useRouter()
 
 const dataForm = reactive({
   id: '',
@@ -46,6 +48,9 @@ const dataForm = reactive({
 })
 
 const init = async (id: any) => {
+
+   await router.push({ path: '/topic' })
+
   visible.value = true
   dataForm.id = id
 
