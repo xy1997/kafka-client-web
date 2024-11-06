@@ -41,14 +41,12 @@ export const useCrud = (options: IHooksOptions) => {
 		}
 	})
 
-	const query = () => {
+	const query = async() => {
 		if (!state.dataListUrl) {
 			return
 		}
-
 		state.dataListLoading = true
-
-		service
+		await service
 			.get(state.dataListUrl, {
 				params: {
 					order: state.order,

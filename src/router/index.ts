@@ -143,6 +143,15 @@ const layoutModules = import.meta.glob("/src/views/**/*.vue");
 
 // 根据路径，动态获取vue组件
 const getDynamicComponent = (path: string): any => {
+
+  const prefixIndex = path.indexOf('/:');
+  console.log("prefixIndex = " + prefixIndex)
+  if (prefixIndex !== -1) {
+    // 截取到 ':/'
+    path = path.substring(0,prefixIndex); // 截取 ':/' 之后的部分
+  }
+
+ // console.log("getDynamicComponent = "+path)
   const component = layoutModules[`/src/views/${path}.vue`];
   if (!component) {
     console.error("component error", path);

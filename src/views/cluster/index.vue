@@ -78,6 +78,7 @@ import { IHooksOptions } from "@/hooks/interface";
 import { InfoFilled } from "@element-plus/icons-vue";
 import { describeCluster } from "@/api/kafka/cluster";
 import { useRouter } from 'vue-router'
+import{ tabClick } from "@/layout/components/Tabs/index.vue"
 
 
 const state: IHooksOptions = reactive({
@@ -115,7 +116,12 @@ const showBrokers = async (id: any) => {
 };
 
 const showTopics = async (id: any) => {
-   await router.push({ path: '/topic/index',query: { id }})
+  console.log("/topic/index/"+id)
+  if (id) {
+    await router.push({ path: `/topic/index/${id}` });
+  } else {
+    await router.push({ path: '/topic/index' });
+  }
 };
 
 const { getDataList, selectionChangeHandle, sizeChangeHandle, currentChangeHandle, deleteBatchHandle } = useCrud(state);
