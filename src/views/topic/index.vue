@@ -61,7 +61,7 @@
                        :style="{ width: '20%' }"></el-table-column>
       <el-table-column label="操作" fixed="right" header-align="center" align="center" width="150">
         <template #default="scope">
-          <el-button type="primary" link @click="addOrUpdateHandle(scope.row.id)">修改</el-button>
+          <el-button type="primary" link @click="addOrUpdateHandle()">修改</el-button>
           <el-button v-if="!scope.row.isInternal" type="primary" link @click="deleteBatch(scope.row.name)">删除
           </el-button>
         </template>
@@ -78,10 +78,12 @@
 import { useRoute } from "vue-router";
 import { useCrud } from "@/hooks";
 import { computed, onMounted, reactive, ref } from "vue";
-import AddOrUpdate from "./add.vue";
+import AddOrUpdate from "./add-or-update.vue";
 import { IHooksOptions } from "@/hooks/interface";
 import { loadBroker } from "@/api/kafka/cluster";
 import { deleteTopic, describeTopics } from "@/api/kafka/topic";
+import { ElMessage, ElMessageBox } from "element-plus";
+import service from "@/utils/request";
 
 interface Partition {
   partition: string;
@@ -146,8 +148,16 @@ const deleteBatch = async (key?: string) => {
   //组建对象
   const parameter = { brokerId: brokerId.value, topicNames: topics.value };
 
-  await deleteTopic(parameter);
-  await getDataList();
+  ElMessageBox.confirm('确定进行删除操作?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
+    .then(async () => {
+      await deleteTopic(parameter);
+      await getDataList();
+    })
+    .catch(() => {})
 };
 
 
@@ -179,8 +189,8 @@ const showReplicas = async (partition: any) => {
 
 
 
-const addOrUpdateHandle = (id?: number) => {
-  addOrUpdateRef.value.init(id);
+const addOrUpdateHandle = () => {
+  addOrUpdateRef.value.init(brokerId.value);
 };
 
 const { getDataList, selectionChangeHandle } = useCrud(state);

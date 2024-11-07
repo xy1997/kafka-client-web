@@ -14,3 +14,7 @@ export const describeTopics = (brokerId: any,topicName: any) => {
     }
   });
 };
+
+export const createTopic = (data: any) => {
+  return service.post("/kafka/topic/createTopic", data);
+};
