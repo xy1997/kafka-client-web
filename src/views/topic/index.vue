@@ -1,64 +1,113 @@
 <template>
-    <el-card>
-      <el-form :inline="true" :model="state.queryForm">
-        <el-form-item>
-          <el-select v-model="state.queryForm.brokerId" @change="brokerChange" placeholder="Select"
-                     style="width: 240px">
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-              :disabled="item.disabled"
-            />
-          </el-select>
+  <el-card>
+    <el-form :inline="true" :model="state.queryForm">
+      <el-form-item>
+        <el-select v-model="state.queryForm.brokerId" @change="brokerChange" placeholder="Select"
+                   style="width: 240px">
+          <el-option
+            v-for="item in options"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+            :disabled="item.disabled"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="addOrUpdateHandle()">新增</el-button>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="danger" @click="deleteBatch()">删除</el-button>
+      </el-form-item>
+    </el-form>
+    <el-table v-loading="state.dataListLoading" :data="state.dataList" border style="width: 80%"
+              @selection-change="selectionChangeHandle">
+      <el-table-column type="selection" header-align="center" align="center" width="50"></el-table-column>
+      <el-table-column prop="name" label="topic name" header-align="center" align="center"
+                       :style="{ width: '80%' }"></el-table-column>
+      <el-table-column label="partitions" header-align="center" align="center">
+        <template #default="scope">
+          <el-popover placement="right" :width="460" trigger="click" @show="showPartitions(scope.row.name)">
+            <template #reference>
+              <el-button type="primary" link>partition</el-button>
+            </template>
+            <el-table :data="partitionsData" v-loading="partitionsLoading">
+              <el-table-column width="150" property="partition" label="partition" />
 
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="addOrUpdateHandle()">新增</el-button>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="danger" @click="deleteBatch()">删除</el-button>
-        </el-form-item>
-      </el-form>
-      <el-table v-loading="state.dataListLoading" :data="state.dataList" border style="width: 80%"
-                @selection-change="selectionChangeHandle">
-        <el-table-column type="selection" header-align="center" align="center" width="50"></el-table-column>
-        <el-table-column prop="name" label="topic name" header-align="center" align="center"
-                         :style="{ width: '80%' }"></el-table-column>
-        <el-table-column prop="isInternal" label="isInternal" header-align="center" align="center"
-                         :style="{ width: '20%' }"></el-table-column>
-        <el-table-column label="操作" fixed="right" header-align="center" align="center" width="150">
-          <template #default="scope">
-            <el-button type="primary" link @click="addOrUpdateHandle(scope.row.id)">修改</el-button>
-            <el-button v-if="!scope.row.isInternal" type="primary" link @click="deleteBatch(scope.row.name)">删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
 
-      <!-- 弹窗, 新增 / 修改 -->
-      <add-or-update ref="addOrUpdateRef" @refreshDataList="getDataList"></add-or-update>
-    </el-card>
+              <el-table-column label="replicas" header-align="center" align="center">
+                <template #default="scope">
+                  <el-popover placement="right" :width="460" trigger="click" @show="showReplicas(scope.row.partition)">
+                    <template #reference>
+                      <el-button type="primary" link>replica</el-button>
+                    </template>
+                    <el-table :data="replicasData" v-loading="">
+                      <el-table-column width="80" property="id" label="id" />
+                      <el-table-column width="80" property="host" label="host" />
+                      <el-table-column width="80" property="port" label="port" />
+                      <el-table-column width="80" property="inSync" label="inSync" />
+                      <el-table-column width="85" property="isLeader" label="isLeader" />
+                    </el-table>
+                  </el-popover>
+                </template>
+              </el-table-column>
+
+
+            </el-table>
+          </el-popover>
+        </template>
+      </el-table-column>
+      <el-table-column prop="isInternal" label="isInternal" header-align="center" align="center"
+                       :style="{ width: '20%' }"></el-table-column>
+      <el-table-column label="操作" fixed="right" header-align="center" align="center" width="150">
+        <template #default="scope">
+          <el-button type="primary" link @click="addOrUpdateHandle(scope.row.id)">修改</el-button>
+          <el-button v-if="!scope.row.isInternal" type="primary" link @click="deleteBatch(scope.row.name)">删除
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <!-- 弹窗, 新增 / 修改 -->
+    <add-or-update ref="addOrUpdateRef" @refreshDataList="getDataList"></add-or-update>
+  </el-card>
 
 </template>
 
 <script setup lang="ts">
 import { useRoute } from "vue-router";
 import { useCrud } from "@/hooks";
-import { reactive, ref, onMounted, computed } from "vue";
-import AddOrUpdate from "./add-or-update.vue";
+import { computed, onMounted, reactive, ref } from "vue";
+import AddOrUpdate from "./add.vue";
 import { IHooksOptions } from "@/hooks/interface";
 import { loadBroker } from "@/api/kafka/cluster";
-import { deleteTopic } from "@/api/kafka/topic";
+import { deleteTopic, describeTopics } from "@/api/kafka/topic";
+
+interface Partition {
+  partition: string;
+  replicas: Replica[];
+}
+
+interface Replica {
+  id: number;
+  host: string;
+  port: number;
+  address: string;
+  inSync: boolean;
+  isLeader: boolean;
+}
 
 const addOrUpdateRef = ref();
 const route = useRoute();
 const brokerId = ref();
 const options = ref();
 
+const partitionsLoading = ref();
+const partitionsData = ref<Partition[]>([]);
+const replicasData = ref<Replica[]>([]);
+
 const createNeed = computed(() => {
-  return  Boolean(route.params.id) && !isNaN(Number(brokerId.value)); // 返回 true 或 false
+  return Boolean(route.params.id) && !isNaN(Number(brokerId.value)); // 返回 true 或 false
 });
 
 const state: IHooksOptions = reactive({
@@ -73,7 +122,6 @@ const state: IHooksOptions = reactive({
 
 
 onMounted(async () => {
-  console.log("route.params.id = " + route.params.id)
   brokerId.value = route.params.id as string;
 
   const { data } = await loadBroker();
@@ -81,10 +129,9 @@ onMounted(async () => {
 });
 
 
-
-const brokerChange = async(e: any) => {
-    await getDataList();
-}
+const brokerChange = async (e: any) => {
+  await getDataList();
+};
 
 const deleteBatch = async (key?: string) => {
   const topics = ref<string[]>([]);
@@ -103,6 +150,38 @@ const deleteBatch = async (key?: string) => {
   await getDataList();
 };
 
+
+const showPartitions = async (name: any) => {
+  partitionsLoading.value = true;
+
+  if (partitionsData.value) {
+    partitionsData.value = [];
+  }
+
+  try {
+    const { data } = await describeTopics(brokerId.value, name);
+    console.log(JSON.stringify(data));
+
+    partitionsData.value = data.partitions;
+  } finally {
+    partitionsLoading.value = false;
+  }
+};
+
+const showReplicas = async (partition: any) => {
+
+  if (replicasData.value) {
+    replicasData.value = [];
+  }
+  const data = partitionsData.value.find(item => item.partition == partition);
+  replicasData.value = data?.replicas || [];
+};
+
+
+
+const addOrUpdateHandle = (id?: number) => {
+  addOrUpdateRef.value.init(id);
+};
 
 const { getDataList, selectionChangeHandle } = useCrud(state);
 </script>
