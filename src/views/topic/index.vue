@@ -61,15 +61,15 @@
                        :style="{ width: '20%' }"></el-table-column>
       <el-table-column label="操作" fixed="right" header-align="center" align="center" width="150">
         <template #default="scope">
-          <el-button type="primary" link @click="addOrUpdateHandle()">修改</el-button>
-          <el-button v-if="!scope.row.isInternal" type="primary" link @click="deleteBatch(scope.row.name)">删除
-          </el-button>
+          <el-button type="primary" link @click="configHandle(scope.row.name)">configs</el-button>
+
         </template>
       </el-table-column>
     </el-table>
 
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update ref="addOrUpdateRef" @refreshDataList="getDataList"></add-or-update>
+    <config ref="configRef" @refreshDataList="getDataList"></config>
   </el-card>
 
 </template>
@@ -79,6 +79,7 @@ import { useRoute } from "vue-router";
 import { useCrud } from "@/hooks";
 import { computed, onMounted, reactive, ref } from "vue";
 import AddOrUpdate from "./add-or-update.vue";
+import config from "./config-update.vue";
 import { IHooksOptions } from "@/hooks/interface";
 import { loadBroker } from "@/api/kafka/cluster";
 import { deleteTopic, describeTopics } from "@/api/kafka/topic";
@@ -100,6 +101,7 @@ interface Replica {
 }
 
 const addOrUpdateRef = ref();
+const configRef = ref();
 const route = useRoute();
 const brokerId = ref();
 const options = ref();
@@ -192,6 +194,10 @@ const showReplicas = async (partition: any) => {
 const addOrUpdateHandle = () => {
   addOrUpdateRef.value.init(brokerId.value);
 };
+
+const configHandle = (name: string) =>{
+  configRef.value.init(brokerId.value,name);
+}
 
 const { getDataList, selectionChangeHandle } = useCrud(state);
 </script>
