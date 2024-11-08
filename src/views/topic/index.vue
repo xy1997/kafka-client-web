@@ -64,7 +64,7 @@
       </el-table-column>
       <el-table-column prop="isInternal" label="isInternal" header-align="center" align="center"
                        :style="{ width: '20%' }"></el-table-column>
-      <el-table-column label="操作" fixed="right" header-align="center" align="center" width="150">
+      <el-table-column label="configs" fixed="right" header-align="center" align="center" width="150">
         <template #default="scope">
           <el-button type="primary" link @click="configHandle(scope.row.name)">configs</el-button>
 

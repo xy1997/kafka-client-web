@@ -45,6 +45,12 @@
         </template>
       </el-table-column>
 
+      <el-table-column label="consumers" header-align="center" align="center">
+        <template #default="scope">
+          <el-button type="primary" link @click="showConsumers(scope.row.id)">consumer</el-button>
+        </template>
+      </el-table-column>
+
       <el-table-column prop="createdTime" label="创建时间" header-align="center" align="center"
                        width="180"></el-table-column>
       <el-table-column label="操作" fixed="right" header-align="center" align="center" width="150">
@@ -78,7 +84,6 @@ import { IHooksOptions } from "@/hooks/interface";
 import { InfoFilled } from "@element-plus/icons-vue";
 import { describeCluster } from "@/api/kafka/cluster";
 import { useRouter } from 'vue-router'
-import{ tabClick } from "@/layout/components/Tabs/index.vue"
 
 
 const state: IHooksOptions = reactive({
@@ -123,6 +128,17 @@ const showTopics = async (id: any) => {
     await router.push({ path: '/topic/index' });
   }
 };
+const showConsumers = async (id: any) => {
+  console.log("/consumer/index/"+id)
+  if (id) {
+    await router.push({ path: `/consumer/index/${id}` });
+  } else {
+    await router.push({ path: '/consumer/index' });
+  }
+};
+
+
+
 
 const { getDataList, selectionChangeHandle, sizeChangeHandle, currentChangeHandle, deleteBatchHandle } = useCrud(state);
 </script>
