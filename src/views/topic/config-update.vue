@@ -119,7 +119,8 @@ const dataRules = ref({
 
 
 const saveConfig = async (key: any, value: any) => {
-  dataFormRef.value.validate(async (valid: boolean) => {
+  console.log("key = " + key)
+  console.log("value = " + value)
     const configMap = new Map<string, string>();
     configMap.set(key, value);
 
@@ -132,8 +133,7 @@ const saveConfig = async (key: any, value: any) => {
     };
     await incrementalAlterConfigs(delParameter);
     await getDataList();
-  });
-};
+  };
 
 const deleteConfig = (key: any, value: any) => {
   ElMessageBox.confirm("确定进行删除操作?", "提示", {

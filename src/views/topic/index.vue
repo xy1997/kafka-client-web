@@ -27,33 +27,38 @@
                        :style="{ width: '80%' }"></el-table-column>
       <el-table-column label="partitions" header-align="center" align="center">
         <template #default="scope">
-          <el-popover placement="right" :width="460" trigger="click" @show="showPartitions(scope.row.name)">
+          <el-popover placement="top-start" :width="460" trigger="click" @show="showPartitions(scope.row.name)" >
             <template #reference>
               <el-button type="primary" link>partition</el-button>
             </template>
-            <el-table :data="partitionsData" v-loading="partitionsLoading">
-              <el-table-column width="150" property="partition" label="partition" />
 
+            <!-- 使用 el-scrollbar 包裹 el-table 并限制最大高度 -->
+            <el-scrollbar style="max-height: 300px; overflow-y: auto;">
+              <el-table :data="partitionsData" v-loading="partitionsLoading">
+                <el-table-column width="150" property="partition" label="partition" />
 
-              <el-table-column label="replicas" header-align="center" align="center">
-                <template #default="scope">
-                  <el-popover placement="right" :width="460" trigger="click" @show="showReplicas(scope.row.partition)">
-                    <template #reference>
-                      <el-button type="primary" link>replica</el-button>
-                    </template>
-                    <el-table :data="replicasData" v-loading="">
-                      <el-table-column width="80" property="id" label="id" />
-                      <el-table-column width="80" property="host" label="host" />
-                      <el-table-column width="80" property="port" label="port" />
-                      <el-table-column width="80" property="inSync" label="inSync" />
-                      <el-table-column width="85" property="isLeader" label="isLeader" />
-                    </el-table>
-                  </el-popover>
-                </template>
-              </el-table-column>
+                <el-table-column label="replicas" header-align="center" align="center">
+                  <template #default="scope">
+                    <el-popover placement="right" :width="460" trigger="click" @show="showReplicas(scope.row.partition)">
+                      <template #reference>
+                        <el-button type="primary" link>replica</el-button>
+                      </template>
 
-
-            </el-table>
+                      <!-- 内层 popover 也使用 el-scrollbar 包裹 el-table -->
+                      <el-scrollbar style="max-height: 200px; overflow-y: auto;">
+                        <el-table :data="replicasData" v-loading="">
+                          <el-table-column width="80" property="id" label="id" />
+                          <el-table-column width="80" property="host" label="host" />
+                          <el-table-column width="80" property="port" label="port" />
+                          <el-table-column width="80" property="inSync" label="inSync" />
+                          <el-table-column width="85" property="isLeader" label="isLeader" />
+                        </el-table>
+                      </el-scrollbar>
+                    </el-popover>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </el-scrollbar>
           </el-popover>
         </template>
       </el-table-column>
