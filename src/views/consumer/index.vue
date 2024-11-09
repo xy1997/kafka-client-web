@@ -13,12 +13,12 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item>
+<!--      <el-form-item>
         <el-button type="primary" @click="addOrUpdateHandle()">新增</el-button>
       </el-form-item>
       <el-form-item>
         <el-button type="danger" @click="deleteBatch()">删除</el-button>
-      </el-form-item>
+      </el-form-item>-->
     </el-form>
     <el-table v-loading="state.dataListLoading" :data="state.dataList" border style="width: 80%"
               @selection-change="selectionChangeHandle">
