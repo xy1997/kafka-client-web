@@ -2,23 +2,28 @@
   <div class="container">
     <div class="top-section">
       <el-row :gutter="10">
-        <el-col :span="6">
-          <el-select v-model="selectedOption1" placeholder="请选择选项1">
-            <el-option v-for="item in options1" :key="item.value" :label="item.label" :value="item.value" />
+        <el-col :span="3">
+          <el-select v-model="selectBrokerOptions" placeholder="broker" @change="brokerChange">
+            <el-option v-for="item in brokerOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-col>
-        <el-col :span="6">
-          <el-select v-model="selectedOption2" placeholder="请选择选项2">
-            <el-option v-for="item in options2" :key="item.value" :label="item.label" :value="item.value" />
+        <el-col :span="3">
+          <el-select v-model="selectedTopicOptions" placeholder="topic" @change="topicChange">
+            <el-option v-for="item in topicOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-col>
-        <el-col :span="6">
-          <el-select v-model="selectedOption3" placeholder="请选择选项3">
-            <el-option v-for="item in options3" :key="item.value" :label="item.label" :value="item.value" />
+        <el-col :span="3">
+          <el-select v-model="selectPartitionOptions" placeholder="partition" @change="partitionChange">
+            <el-option v-for="item in partitionOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-col>
-        <el-col :span="6">
-          <el-button type="primary" @click="onButtonClick">提交</el-button>
+        <el-col :span="3">
+          <el-select v-model="selectOffsetOptions" placeholder="offset" @change="offsetChange">
+            <el-option v-for="item in offsetOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-col>
+        <el-col :span="3">
+          <el-button type="primary" @click="onButtonClick">连接</el-button>
         </el-col>
       </el-row>
     </div>
@@ -35,42 +40,54 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watchEffect, onUnmounted } from "vue";
+import { loadBroker } from "@/api/kafka/cluster";
+import { loadPartition, loadTopic } from "@/api/kafka/topic";
+import { ElMessage } from "element-plus/es";
 
-const options1 = [{ label: "选项1", value: "option1" }, { label: "选项2", value: "option2" }, {
-  label: "选项3",
-  value: "option3"
-}];
-const options2 = [{ label: "选项A", value: "optionA" }, { label: "选项B", value: "optionB" }, {
-  label: "选项C",
-  value: "optionC"
-}];
-const options3 = [{ label: "选项X", value: "optionX" }, { label: "选项Y", value: "optionY" }, {
-  label: "选项Z",
-  value: "optionZ"
-}];
+const brokerId = ref();
+const topicName = ref();
+const partition = ref();
+const offset = ref();
 
-const selectedOption1 = ref("");
-const selectedOption2 = ref("");
-const selectedOption3 = ref("");
+const brokerOptions = ref();
+const topicOptions = ref();
+const partitionOptions = ref();
+const offsetOptions = [{ label: "earliest", value: "earliest" }, { label: "latest", value: "latest" }];
+
+const selectBrokerOptions = ref("");
+const selectedTopicOptions = ref("");
+const selectPartitionOptions = ref("");
+const selectOffsetOptions = ref("");
+
 const messages = ref<string[]>([]);
 
 let websocket: WebSocket | null = null;
-let reconnectAttempts = 0;
-const maxReconnectAttempts = 5;
-const reconnectDelay = 2000;
 
 const createWebSocket = () => {
-  // if (websocket) {
-  //   websocket.close();
-  //   websocket = null;
-  // }
-  //
-  // websocket = new WebSocket("ws://localhost:8080/consumer/pool/1/top1-1/1");
-  websocket = new WebSocket("ws://localhost:8080/consumer/pool/1/top1-1/1");
+
+
+  if (brokerId.value == null) {
+    ElMessage.warning("请选择broker");
+    return;
+  }
+  if (topicName.value == null) {
+    ElMessage.warning("请选择topic");
+    return;
+  }
+  if (partition.value == null) {
+    partition.value = -1;
+  }
+  if (offset.value == null) {
+    offset.value = "latest";
+  }
+
+  console.log("brokerId = " + brokerId.value + "  topicName = " + topicName.value + "  partition = " + partition.value + "  offset = " + offset.value);
+  const WS = import.meta.env.VITE_API_WS_URL as string + "/consumer/pool/" + offset.value + "/" + brokerId.value + "/" + topicName.value + "/" + partition.value;
+
+  websocket = new WebSocket(WS);
 
   websocket.onopen = () => {
     console.log("WebSocket连接已打开");
-    reconnectAttempts = 0;
   };
 
   websocket.onmessage = (event) => {
@@ -90,24 +107,37 @@ const createWebSocket = () => {
   };
 };
 
-const attemptReconnect = () => {
-  if (reconnectAttempts < maxReconnectAttempts) {
-    reconnectAttempts++;
-    console.log(`WebSocket重连尝试 #${reconnectAttempts}...`);
-    setTimeout(() => {
-      createWebSocket();
-    }, reconnectDelay);
-  } else {
-    console.log("WebSocket连接重连已达到最大次数");
-  }
+const brokerChange = async (e: any) => {
+  brokerId.value = e;
+
+  topicOptions.value = [];
+  const { data } = await loadTopic(e);
+  topicOptions.value = data;
+};
+
+const topicChange = async (e: any) => {
+  topicName.value = e;
+  partitionOptions.value = [];
+  const { data } = await loadPartition(brokerId.value, e);
+  partitionOptions.value = data;
+};
+
+const partitionChange = async (e: any) => {
+  partition.value = e;
+};
+
+const offsetChange = async (e: any) => {
+  offset.value = e;
 };
 
 const onButtonClick = () => {
-  console.log("提交按钮点击了", selectedOption1.value, selectedOption2.value, selectedOption3.value);
+
+  createWebSocket();
 };
 
-onMounted(() => {
-  createWebSocket();
+onMounted(async () => {
+  const { data } = await loadBroker();
+  brokerOptions.value = data;
 });
 
 onUnmounted(() => {
