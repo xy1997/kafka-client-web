@@ -23,7 +23,7 @@
           </el-select>
         </el-col>
         <el-col :span="3">
-          <el-button type="primary" @click="onButtonClick">连接</el-button>
+          <el-button type="primary" @click="onButtonClick">订阅</el-button>
         </el-col>
       </el-row>
     </div>
@@ -42,8 +42,7 @@
 import { ref, onMounted, watchEffect, onUnmounted } from "vue";
 import { loadBroker } from "@/api/kafka/cluster";
 import { loadPartition, loadTopic } from "@/api/kafka/topic";
-import { ElMessage } from "element-plus/es";
-import { ElMessageBox } from "element-plus";
+import { ElMessage, ElMessageBox, ElLoading } from "element-plus";
 
 const brokerId = ref();
 const topicName = ref();
@@ -61,11 +60,10 @@ const selectPartitionOptions = ref("");
 const selectOffsetOptions = ref("");
 
 const messages = ref<string[]>([]);
-
 let websocket: WebSocket | null = null;
+let loadingInstance: any = null;
 
 const createWebSocket = () => {
-
   if (brokerId.value == null) {
     ElMessage.warning("请选择broker");
     return;
@@ -74,49 +72,55 @@ const createWebSocket = () => {
     ElMessage.warning("请选择topic");
     return;
   }
+  loadingInstance = ElLoading.service({
+    lock: true,
+    text: '连接中，请稍候...',
+    background: 'rgba(0, 0, 0, 0.7)',
+  });
+
   if (partition.value == null) {
     partition.value = -1;
   }
   if (offset.value == null) {
     offset.value = "latest";
   }
-  const uniqueParam = new Date().getTime();  // 使用时间戳避免重复
-  console.log("brokerId = " + brokerId.value + "  topicName = " + topicName.value + "  partition = " + partition.value + "  offset = " + offset.value);
+  const uniqueParam = new Date().getTime();
   const WS = import.meta.env.VITE_API_WS_URL as string + "/consumer/pool/" + offset.value + "/" + brokerId.value + "/" + topicName.value + "/" + partition.value + "?t=" + uniqueParam;
 
   websocket = new WebSocket(WS);
 
   websocket.onopen = () => {
-
+    loadingInstance?.close();
+    ElMessageBox.alert("成功订阅" + topicName.value, "订阅", {
+      confirmButtonText: "确定",
+      type: "success",
+    });
     console.log("WebSocket连接已打开");
-    };
+  };
 
   websocket.onmessage = (event) => {
     try {
-      console.log("收到消息:", event.data);
       const newMessage = event.data;
-      messages.value = [newMessage, ...messages.value]; // 新消息添加到数组前端
+      messages.value = [newMessage, ...messages.value];
     } catch (error) {
       console.error("处理消息时出错:", error);
     }
   };
 
   websocket.onclose = () => {
+    loadingInstance?.close();
     console.log("WebSocket连接已关闭");
     if (websocket && websocket.readyState !== 1 && websocket.readyState !== 0) {
       ElMessageBox.alert("WebSocket连接已关闭，请检查网络或重试连接", "连接断开", {
         confirmButtonText: "确定",
         type: "warning",
         showClose: false,
-        callback: () => {
-          console.log("用户已确认WebSocket断开提示");
-        }
       });
     }
-
   };
 
   websocket.onerror = (err) => {
+    loadingInstance?.close();
     console.log("WebSocket发生错误:", err);
     websocket?.close();
   };
@@ -124,7 +128,6 @@ const createWebSocket = () => {
 
 const brokerChange = async (e: any) => {
   brokerId.value = e;
-
   topicOptions.value = [];
   const { data } = await loadTopic(e);
   topicOptions.value = data;
@@ -147,9 +150,10 @@ const offsetChange = async (e: any) => {
 
 const onButtonClick = () => {
   if (websocket) {
-    websocket.close(); // 确保在组件销毁时关闭连接
+    websocket.close();
     websocket = null;
   }
+  messages.value = [];
 
   createWebSocket();
 };
@@ -161,7 +165,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   if (websocket) {
-    websocket.close(); // 确保在组件销毁时关闭连接
+    websocket.close();
     websocket = null;
   }
 });

@@ -1,7 +1,7 @@
 <template>
   <el-dialog v-model="visible" :title="'配置信息'" :close-on-click-modal="false" :width="'50%'"
              :style="{ height: '60vh', overflow: 'hidden' }">
-    <el-form ref="dataFormRef" :rules="dataRules" label-width="150px" @keyup.enter="submitHandle()">
+    <el-form v-loading="loading" ref="dataFormRef" :rules="dataRules" label-width="150px" @keyup.enter="submitHandle()">
 
       <!-- 对话框内容部分，设置滚动条 -->
       <div class="dialog-content">
@@ -76,7 +76,7 @@ const name = ref();
 const dataFormRef = ref();
 const configArray = ref<{ key: string; value: string }[]>([]);
 
-
+const loading = ref();
 const init = async (id: any, topicName: any) => {
   visible.value = true;
   brokerId.value = id;
@@ -87,6 +87,7 @@ const init = async (id: any, topicName: any) => {
 
 const getDataList = async () => {
   configArray.value = [];
+  loading.value = true;
 
   const parameter = {
     brokerId: brokerId.value,
@@ -94,17 +95,22 @@ const getDataList = async () => {
     type: "TOPIC"
   };
 
-  const { data }: { data: config[] } = await describeConfigs(parameter);
+  try {
+    const { data }: { data: config[] } = await describeConfigs(parameter);
+    data.forEach(item => {
+      if (item.name && item.value) { // 确保 key 和 value 都有值
+        configArray.value.push({ key: item.name, value: item.value });
+      }
+    });
 
-  data.forEach(item => {
-    if (item.name && item.value) { // 确保 key 和 value 都有值
-      configArray.value.push({ key: item.name, value: item.value });
+    if (dataFormRef.value) {
+      dataFormRef.value.resetFields();
     }
-  });
-
-  if (dataFormRef.value) {
-    dataFormRef.value.resetFields();
+  } finally {
+    loading.value = false;
   }
+
+
 };
 
 const addConfig = () => {
@@ -119,21 +125,21 @@ const dataRules = ref({
 
 
 const saveConfig = async (key: any, value: any) => {
-  console.log("key = " + key)
-  console.log("value = " + value)
-    const configMap = new Map<string, string>();
-    configMap.set(key, value);
+  console.log("key = " + key);
+  console.log("value = " + value);
+  const configMap = new Map<string, string>();
+  configMap.set(key, value);
 
-    const delParameter = {
-      brokerId: brokerId.value,
-      name: name.value,
-      type: "TOPIC",
-      opType: "SET",
-      configs: Object.fromEntries(configMap)
-    };
-    await incrementalAlterConfigs(delParameter);
-    await getDataList();
+  const delParameter = {
+    brokerId: brokerId.value,
+    name: name.value,
+    type: "TOPIC",
+    opType: "SET",
+    configs: Object.fromEntries(configMap)
   };
+  await incrementalAlterConfigs(delParameter);
+  await getDataList();
+};
 
 const deleteConfig = (key: any, value: any) => {
   ElMessageBox.confirm("确定进行删除操作?", "提示", {

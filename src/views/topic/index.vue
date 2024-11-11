@@ -46,7 +46,7 @@
 
                       <!-- 内层 popover 也使用 el-scrollbar 包裹 el-table -->
                       <el-scrollbar style="max-height: 200px; overflow-y: auto;">
-                        <el-table :data="replicasData" v-loading="">
+                        <el-table :data="replicasData" v-loading="replicasLoading">
                           <el-table-column width="80" property="id" label="id" />
                           <el-table-column width="80" property="host" label="host" />
                           <el-table-column width="80" property="port" label="port" />
@@ -114,6 +114,8 @@ const options = ref();
 const partitionsLoading = ref();
 const partitionsData = ref<Partition[]>([]);
 const replicasData = ref<Replica[]>([]);
+
+const replicasLoading = ref();
 
 const createNeed = computed(() => {
   return Boolean(route.params.id) && !isNaN(Number(brokerId.value)); // 返回 true 或 false
@@ -186,12 +188,17 @@ const showPartitions = async (name: any) => {
 };
 
 const showReplicas = async (partition: any) => {
+  replicasLoading.value = true
 
-  if (replicasData.value) {
-    replicasData.value = [];
+  try{
+    if (replicasData.value) {
+      replicasData.value = [];
+    }
+    const data = partitionsData.value.find(item => item.partition == partition);
+    replicasData.value = data?.replicas || [];
+  }finally {
+    replicasLoading.value = false
   }
-  const data = partitionsData.value.find(item => item.partition == partition);
-  replicasData.value = data?.replicas || [];
 };
 
 

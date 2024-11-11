@@ -3,7 +3,7 @@
              :style="{ height: '60vh', overflow: 'hidden' }">
     <el-card>
       <el-scrollbar style="max-height: 400px; overflow-y: auto;">
-        <el-table v-loading="" :data="configArray" border style="width: 100%">
+        <el-table v-loading="loading" :data="configArray" border style="width: 100%">
           <el-table-column prop="topic" label="topic" header-align="center" align="center"
                            width="300"></el-table-column>
           <el-table-column prop="partition" label="partition" header-align="center" align="center"></el-table-column>
@@ -48,6 +48,7 @@ const configArray = ref<{
   lag: number
 }[]>([]);
 
+const loading = ref();
 
 const init = async (id: any, gid: any) => {
   visible.value = true;
@@ -59,22 +60,27 @@ const init = async (id: any, gid: any) => {
 
 const getDataList = async () => {
   configArray.value = [];
+  loading.value = true;
 
-  const { data }: { data: offset[] } = await listTopicInfoOfConsumer(brokerId.value, groupId.value);
+  try {
+    const { data }: { data: offset[] } = await listTopicInfoOfConsumer(brokerId.value, groupId.value);
 
-  data.forEach(item => {
-    configArray.value.push({
-      topic: item.topic,
-      partition: item.partition,
-      beginOffset: item.beginOffset,
-      endOffset: item.endOffset,
-      offset: item.offset,
-      lag: item.lag
+    data.forEach(item => {
+      configArray.value.push({
+        topic: item.topic,
+        partition: item.partition,
+        beginOffset: item.beginOffset,
+        endOffset: item.endOffset,
+        offset: item.offset,
+        lag: item.lag
+      });
     });
-  });
 
-  if (dataFormRef.value) {
-    dataFormRef.value.resetFields();
+    if (dataFormRef.value) {
+      dataFormRef.value.resetFields();
+    }
+  } finally {
+    loading.value = false
   }
 };
 
