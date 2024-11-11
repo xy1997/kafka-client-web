@@ -43,6 +43,7 @@ import { ref, onMounted, watchEffect, onUnmounted } from "vue";
 import { loadBroker } from "@/api/kafka/cluster";
 import { loadPartition, loadTopic } from "@/api/kafka/topic";
 import { ElMessage } from "element-plus/es";
+import { ElMessageBox } from "element-plus";
 
 const brokerId = ref();
 const topicName = ref();
@@ -65,7 +66,6 @@ let websocket: WebSocket | null = null;
 
 const createWebSocket = () => {
 
-
   if (brokerId.value == null) {
     ElMessage.warning("请选择broker");
     return;
@@ -80,25 +80,40 @@ const createWebSocket = () => {
   if (offset.value == null) {
     offset.value = "latest";
   }
-
+  const uniqueParam = new Date().getTime();  // 使用时间戳避免重复
   console.log("brokerId = " + brokerId.value + "  topicName = " + topicName.value + "  partition = " + partition.value + "  offset = " + offset.value);
-  const WS = import.meta.env.VITE_API_WS_URL as string + "/consumer/pool/" + offset.value + "/" + brokerId.value + "/" + topicName.value + "/" + partition.value;
+  const WS = import.meta.env.VITE_API_WS_URL as string + "/consumer/pool/" + offset.value + "/" + brokerId.value + "/" + topicName.value + "/" + partition.value + "?t=" + uniqueParam;
 
   websocket = new WebSocket(WS);
 
   websocket.onopen = () => {
+
     console.log("WebSocket连接已打开");
-  };
+    };
 
   websocket.onmessage = (event) => {
-    console.log("收到消息:", event.data);
-    const newMessage = event.data;
-    messages.value = [newMessage, ...messages.value]; // 新消息添加到数组前端
+    try {
+      console.log("收到消息:", event.data);
+      const newMessage = event.data;
+      messages.value = [newMessage, ...messages.value]; // 新消息添加到数组前端
+    } catch (error) {
+      console.error("处理消息时出错:", error);
+    }
   };
 
   websocket.onclose = () => {
     console.log("WebSocket连接已关闭");
-    //  attemptReconnect();
+    if (websocket && websocket.readyState !== 1 && websocket.readyState !== 0) {
+      ElMessageBox.alert("WebSocket连接已关闭，请检查网络或重试连接", "连接断开", {
+        confirmButtonText: "确定",
+        type: "warning",
+        showClose: false,
+        callback: () => {
+          console.log("用户已确认WebSocket断开提示");
+        }
+      });
+    }
+
   };
 
   websocket.onerror = (err) => {
@@ -131,6 +146,10 @@ const offsetChange = async (e: any) => {
 };
 
 const onButtonClick = () => {
+  if (websocket) {
+    websocket.close(); // 确保在组件销毁时关闭连接
+    websocket = null;
+  }
 
   createWebSocket();
 };
