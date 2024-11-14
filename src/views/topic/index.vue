@@ -133,7 +133,10 @@ const state: IHooksOptions = reactive({
 
 
 onMounted(async () => {
-  brokerId.value = route.params.id as string;
+  if(route.params.id !== ':id'){
+    brokerId.value = route.params.id as string;
+  }
+
 
   const { data } = await loadBroker();
   options.value = data;

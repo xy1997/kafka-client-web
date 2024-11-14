@@ -5,7 +5,7 @@
 			<div class="desc">
 				{{ $t('app.description') }}
 			</div>
-			<div class="login-bg"><img src="@/assets/login.png" alt="" /></div>
+			<div class="login-bg"><img src="../../assets/login.svg" alt="" /></div>
 		</div>
 		<div class="login-form">
 			<el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" @keyup.enter="onLogin">

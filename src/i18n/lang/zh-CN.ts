@@ -15,11 +15,11 @@ export default {
 	updateTime: '更新时间',
 	required: '必填项不能为空',
 	app: {
-		title: 'Maku Element Admin',
+		title: 'MinTool',
 		description:
-			'基于Vue3、TypeScript、Element Plus、Vue Router、Pinia、Axios、i18n、Vite等开发的后台管理模板，使用门槛极低，采用MIT开源协议，完全免费开源，可免费用于商业项目等场景！',
-		logoText: 'Maku Element Admin',
-		miniLogoText: 'MAKU',
+			'集成开发时需要的小工具',
+		logoText: 'MinTool',
+		miniLogoText: 'MinTool',
 		username: '用户名',
 		password: '密码',
 		captcha: '验证码',

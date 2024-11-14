@@ -8,18 +8,18 @@
 		<div class="navbar-right">
 			<Lang />
 			<ComponentSize />
-			<a href="https://maku.net" target="_blank">
+<!--			<a href="https://maku.net" target="_blank">
 				<svg-icon icon="icon-earth"></svg-icon>
-			</a>
-			<a href="https://github.com/makunet/maku-element-admin" target="_blank">
+			</a>-->
+<!--			<a href="https://github.com/makunet/maku-element-admin" target="_blank">
 				<svg-icon icon="icon-github-fill"></svg-icon>
 			</a>
 			<a href="https://gitee.com/makunet/maku-element-admin" target="_blank">
 				<svg-icon icon="icon-gitee-fill-round"></svg-icon>
-			</a>
+			</a>-->
 
 			<Search />
-			<Notice />
+<!--			<Notice />-->
 			<Fullscreen />
 			<User />
 			<Settings />

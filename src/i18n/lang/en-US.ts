@@ -15,11 +15,11 @@ export default {
 	updateTime: 'Update Time',
 	required: 'Required items cannot be empty',
 	app: {
-		title: 'Maku Element Admin',
+		title: 'MinTool',
 		description:
 			'The backstage management template developed based on Vue3, TypeScript, Element Plus, Vue Router, Pinia, Axios, i18n、Vite, etc., has a very low threshold for use, adopts the MIT open source protocol, is completely free and open source, and can be used for commercial projects and other scenarios for free! ',
-		logoText: 'Maku Element Admin',
-		miniLogoText: 'MAKU',
+		logoText: 'MinTool',
+		miniLogoText: 'MinTool',
 		username: 'Username',
 		password: 'Password',
 		captcha: 'Captcha',

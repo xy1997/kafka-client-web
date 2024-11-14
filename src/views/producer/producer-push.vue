@@ -1,33 +1,40 @@
 <template>
   <div class="container">
     <div class="top-section">
-      <el-row :gutter="10">
+      <el-row :gutter="10" type="flex" justify="start" align="middle">
+        <!-- Broker Dropdown -->
         <el-col :span="3">
           <el-select v-model="selectBrokerOptions" placeholder="broker" @change="brokerChange">
             <el-option v-for="item in brokerOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-col>
+        <!-- Topic Dropdown -->
         <el-col :span="3">
           <el-select v-model="selectedTopicOptions" placeholder="topic" @change="topicChange">
             <el-option v-for="item in topicOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-col>
+        <!-- Partition Dropdown -->
         <el-col :span="3">
-          <el-select v-model="selectPartitionOptions" placeholder="partition" @change="partitionChange">
+          <el-select v-model="selectPartitionOptions" placeholder="partition非必选" @change="partitionChange">
             <el-option v-for="item in partitionOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-col>
+        <!-- Push Button -->
         <el-col :span="3">
-          <el-select v-model="selectOffsetOptions" placeholder="offset" @change="offsetChange">
-            <el-option v-for="item in offsetOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+          <el-button type="primary" @click="onButtonClick">推送</el-button>
         </el-col>
-        <el-col :span="3">
-          <el-button type="primary" @click="onButtonClick">订阅</el-button>
+      </el-row>
+
+      <!-- Textarea (富文本框) -->
+      <el-row>
+        <el-col :span="24">
+          <el-input type="textarea" v-model="textAreaContent" placeholder="请输入内容" rows="4"></el-input>
         </el-col>
       </el-row>
     </div>
 
+    <!-- Bottom Section with Gray Background -->
     <div class="bottom-section">
       <div class="gray-background" ref="scrollContainer">
         <div v-for="(message, index) in messages" :key="message + '-' + index" class="message">
@@ -39,31 +46,33 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watchEffect, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, watchEffect } from "vue";
 import { loadBroker } from "@/api/kafka/cluster";
 import { loadPartition, loadTopic } from "@/api/kafka/topic";
-import { ElMessage, ElMessageBox, ElLoading } from "element-plus";
+import { sendMessageApi } from "@/api/kafka/producer";
+import { ElMessage, ElLoading } from "element-plus";
 
 const brokerId = ref();
 const topicName = ref();
 const partition = ref();
-const offset = ref();
 
 const brokerOptions = ref();
 const topicOptions = ref();
 const partitionOptions = ref();
-const offsetOptions = [{ label: "earliest", value: "earliest" }, { label: "latest", value: "latest" }];
 
 const selectBrokerOptions = ref("");
 const selectedTopicOptions = ref("");
 const selectPartitionOptions = ref("");
-const selectOffsetOptions = ref("");
+
+// 定义文本域内容的 ref
+const textAreaContent = ref("");
 
 const messages = ref<string[]>([]);
 let websocket: WebSocket | null = null;
 let loadingInstance: any = null;
 
-const createWebSocket = () => {
+const sendMessage = async () => {
+
   if (brokerId.value == null) {
     ElMessage.warning("请选择broker");
     return;
@@ -74,56 +83,34 @@ const createWebSocket = () => {
   }
   loadingInstance = ElLoading.service({
     lock: true,
-    text: '连接中，请稍候...',
-    background: 'rgba(0, 0, 0, 0.7)',
+    text: "连接中，请稍候...",
+    background: "rgba(0, 0, 0, 0.7)"
   });
 
-  if (partition.value == null) {
-    partition.value = -1;
-  }
-  if (offset.value == null) {
-    offset.value = "latest";
-  }
-  const uniqueParam = new Date().getTime();
-  const WS = import.meta.env.VITE_API_WS_URL as string + "/consumer/pool/" + offset.value + "/" + brokerId.value + "/" + topicName.value + "/" + partition.value + "?t=" + uniqueParam;
-
-  websocket = new WebSocket(WS);
-
-  websocket.onopen = () => {
-    loadingInstance?.close();
-    ElMessageBox.alert("成功订阅" + topicName.value, "订阅", {
-      confirmButtonText: "确定",
-      type: "success",
+  const parameter = {
+    brokerId: brokerId.value,
+    topic: topicName.value,
+    partition: partition.value,
+    message: textAreaContent.value
+  };
+  try {
+    await sendMessageApi(parameter).then((res: any) => {
+      messages.value = [textAreaContent.value, ...messages.value];
+      textAreaContent.value = "";
     });
-    console.log("WebSocket连接已打开");
-  };
-
-  websocket.onmessage = (event) => {
-    try {
-      const newMessage = event.data;
-      messages.value = [newMessage, ...messages.value];
-    } catch (error) {
-      console.error("处理消息时出错:", error);
-    }
-  };
-
-  websocket.onclose = () => {
+  } finally {
     loadingInstance?.close();
-    console.log("WebSocket连接已关闭");
-    if (websocket && websocket.readyState !== 1 && websocket.readyState !== 0) {
-      ElMessageBox.alert("WebSocket连接已关闭，请检查网络或重试连接", "连接断开", {
-        confirmButtonText: "确定",
-        type: "warning",
-        showClose: false,
-      });
-    }
-  };
+  }
 
-  websocket.onerror = (err) => {
-    loadingInstance?.close();
-    console.log("WebSocket发生错误:", err);
-    websocket?.close();
-  };
+
+  // websocket.onmessage = (event) => {
+  //   try {
+  //     const newMessage = event.data;
+  //     messages.value = [newMessage, ...messages.value];
+  //   } catch (error) {
+  //     console.error("处理消息时出错:", error);
+  //   }
+  // };
 };
 
 const brokerChange = async (e: any) => {
@@ -144,18 +131,8 @@ const partitionChange = async (e: any) => {
   partition.value = e;
 };
 
-const offsetChange = async (e: any) => {
-  offset.value = e;
-};
-
 const onButtonClick = () => {
-  if (websocket) {
-    websocket.close();
-    websocket = null;
-  }
-  messages.value = [];
-
-  createWebSocket();
+  sendMessage();
 };
 
 onMounted(async () => {
@@ -209,5 +186,14 @@ watchEffect(() => {
   padding: 10px;
   margin-bottom: 10px;
   border-radius: 5px;
+}
+
+/* Adjust input fields and layout */
+.el-row {
+  margin-bottom: 20px;
+}
+
+.el-input {
+  width: 100%;
 }
 </style>
