@@ -27,7 +27,7 @@
                        :style="{ width: '80%' }"></el-table-column>
       <el-table-column label="partitions" header-align="center" align="center">
         <template #default="scope">
-          <el-popover placement="top-start" :width="460" trigger="click" @show="showPartitions(scope.row.name)" >
+          <el-popover placement="top-start" :width="460" trigger="click" @show="showPartitions(scope.row.name)">
             <template #reference>
               <el-button type="primary" link>partition</el-button>
             </template>
@@ -39,7 +39,8 @@
 
                 <el-table-column label="replicas" header-align="center" align="center">
                   <template #default="scope">
-                    <el-popover placement="right" :width="460" trigger="click" @show="showReplicas(scope.row.partition)">
+                    <el-popover placement="right" :width="460" trigger="click"
+                                @show="showReplicas(scope.row.partition)">
                       <template #reference>
                         <el-button type="primary" link>replica</el-button>
                       </template>
@@ -67,7 +68,13 @@
       <el-table-column label="configs" fixed="right" header-align="center" align="center" width="150">
         <template #default="scope">
           <el-button type="primary" link @click="configHandle(scope.row.name)">configs</el-button>
+        </template>
+      </el-table-column>
 
+      <el-table-column label="操作" fixed="right" header-align="center" align="center" width="300">
+        <template #default="scope">
+          <el-button type="primary" link @click="createPartitions(scope.row.name)">修改分区数</el-button>
+          <el-button type="primary" link @click="alterPartitionReassignments(scope.row.name)">修改副本数</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -75,6 +82,8 @@
     <!-- 弹窗, 新增 / 修改 -->
     <add-or-update ref="addOrUpdateRef" @refreshDataList="getDataList"></add-or-update>
     <config ref="configRef" @refreshDataList="getDataList"></config>
+    <create-partition ref="createPartitionRef" @refreshDataList="getDataList"></create-partition>
+    <create-replication ref="createReplicationRef" @refreshDataList="getDataList"></create-replication>
   </el-card>
 
 </template>
@@ -85,11 +94,13 @@ import { useCrud } from "@/hooks";
 import { computed, onMounted, reactive, ref } from "vue";
 import AddOrUpdate from "./add-or-update.vue";
 import config from "./config-update.vue";
+import createPartition from "./create-partition.vue";
+import replication from "./create-replication.vue";
 import { IHooksOptions } from "@/hooks/interface";
 import { loadBroker } from "@/api/kafka/cluster";
 import { deleteTopic, describeTopics } from "@/api/kafka/topic";
-import { ElMessage, ElMessageBox } from "element-plus";
-import service from "@/utils/request";
+import { ElMessageBox } from "element-plus";
+import CreateReplication from "@/views/topic/create-replication.vue";
 
 interface Partition {
   partition: string;
@@ -110,6 +121,8 @@ const configRef = ref();
 const route = useRoute();
 const brokerId = ref();
 const options = ref();
+const createPartitionRef = ref();
+const createReplicationRef = ref();
 
 const partitionsLoading = ref();
 const partitionsData = ref<Partition[]>([]);
@@ -133,7 +146,7 @@ const state: IHooksOptions = reactive({
 
 
 onMounted(async () => {
-  if(route.params.id !== ':id'){
+  if (route.params.id !== ":id") {
     brokerId.value = route.params.id as string;
   }
 
@@ -160,16 +173,17 @@ const deleteBatch = async (key?: string) => {
   //组建对象
   const parameter = { brokerId: brokerId.value, topicNames: topics.value };
 
-  ElMessageBox.confirm('确定进行删除操作?', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
+  ElMessageBox.confirm("确定进行删除操作?", "提示", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning"
   })
     .then(async () => {
       await deleteTopic(parameter);
       await getDataList();
     })
-    .catch(() => {})
+    .catch(() => {
+    });
 };
 
 
@@ -191,28 +205,41 @@ const showPartitions = async (name: any) => {
 };
 
 const showReplicas = async (partition: any) => {
-  replicasLoading.value = true
+  replicasLoading.value = true;
 
-  try{
+  try {
     if (replicasData.value) {
       replicasData.value = [];
     }
     const data = partitionsData.value.find(item => item.partition == partition);
     replicasData.value = data?.replicas || [];
-  }finally {
-    replicasLoading.value = false
+  } finally {
+    replicasLoading.value = false;
   }
 };
-
 
 
 const addOrUpdateHandle = () => {
   addOrUpdateRef.value.init(brokerId.value);
 };
 
-const configHandle = (name: string) =>{
-  configRef.value.init(brokerId.value,name);
-}
+const configHandle = (name: string) => {
+  configRef.value.init(brokerId.value, name);
+};
+
+/**
+ * 修改分区数
+ */
+const createPartitions = (name: string) => {
+  createPartitionRef.value.init(brokerId.value, name);
+};
+
+/**
+ * 修改副本数
+ */
+const alterPartitionReassignments = (name: string) => {
+  createReplicationRef.value.init(brokerId.value, name);
+};
 
 const { getDataList, selectionChangeHandle } = useCrud(state);
 </script>

@@ -15,11 +15,11 @@ export default {
 	updateTime: '更新时间',
 	required: '必填项不能为空',
 	app: {
-		title: 'MinTool',
+		title: 'MinTools',
 		description:
 			'集成开发时需要的小工具',
-		logoText: 'MinTool',
-		miniLogoText: 'MinTool',
+		logoText: 'MinTools',
+		miniLogoText: 'MinTools',
 		username: '用户名',
 		password: '密码',
 		captcha: '验证码',

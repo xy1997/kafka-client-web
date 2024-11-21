@@ -26,3 +26,11 @@ export const loadTopic = (brokerId: any) => {
 export const loadPartition = (brokerId: any, topicName: any) => {
   return service.get("/kafka/topic/loadPartition?brokerId=" + brokerId + "&topicName=" + topicName);
 };
+
+export const createPartitions = (data: any) => {
+  return service.post("/kafka/topic/createPartitions", data);
+};
+
+export const createReplications = (data: any) => {
+  return service.post("/kafka/topic/alterPartitionReassignments", data);
+};
