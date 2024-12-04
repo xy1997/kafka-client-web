@@ -85,7 +85,19 @@ const createWebSocket = () => {
     offset.value = "latest";
   }
   const uniqueParam = new Date().getTime();
-  const WS = import.meta.env.VITE_API_WS_URL as string + "/consumer/pool/" + offset.value + "/" + brokerId.value + "/" + topicName.value + "/" + partition.value + "?t=" + uniqueParam;
+
+
+  let wsAddress;
+
+  const environment = import.meta.env.MODE;
+  if(environment === "production"){
+    const apiUrl = import.meta.env.VITE_API_URL;
+     wsAddress = `${window.location.origin.replace(/^http/, 'ws')}${apiUrl.replace('/api', '')}/ws/`;
+  }else{
+    wsAddress = import.meta.env.VITE_API_WS_URL;
+  }
+
+  const WS = wsAddress + "consumer/pool/" + offset.value + "/" + brokerId.value + "/" + topicName.value + "/" + partition.value + "?t=" + uniqueParam;
 
   websocket = new WebSocket(WS);
 

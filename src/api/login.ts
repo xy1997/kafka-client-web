@@ -1,17 +1,9 @@
 import service from '@/utils/request'
 
 export const useLoginApi = (data: any) => {
-	return service.post('/data/login.json', data, {
-		auth: {
-			username: 'web',
-			password: '123456'
-		},
-		headers: {
-			'Content-Type': 'application/x-www-form-urlencoded'
-		}
-	})
+	return service.post("/user/login", data);
 }
 
 export const useLogoutApi = () => {
-	return service.post('/data/success.json')
+	return service.post('/user/loginOut')
 }

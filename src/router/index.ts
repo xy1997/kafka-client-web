@@ -41,15 +41,6 @@ const asyncRoutes: RouteRecordRaw = {
         title: i18n.global.t("router.home"),
         affix: true
       }
-    },
-    {
-      path: "/profile/password",
-      name: "ProfilePassword",
-      component: () => import("../views/profile/password.vue"),
-      meta: {
-        title: i18n.global.t("router.profilePassword"),
-        cache: true
-      }
     }
   ]
 };

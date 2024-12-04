@@ -58,7 +58,7 @@ const onLogin = () => {
 		}
 
 		// 用户登录
-		store.userStore.loginAction(loginForm).then(() => {
+		store.userStore.loginAction(loginForm.value).then(() => {
 			router.push({ path: '/home' })
 		})
 	})

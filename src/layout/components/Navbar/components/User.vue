@@ -7,9 +7,9 @@
 		</div>
 		<template #dropdown>
 			<el-dropdown-menu class="user-dropdown">
-				<router-link to="/profile/password">
+<!--				<router-link to="/profile/password">
 					<el-dropdown-item> {{ $t('router.profilePassword') }} </el-dropdown-item>
-				</router-link>
+				</router-link>-->
 				<el-dropdown-item divided @click="logout"> {{ $t('app.signOut') }} </el-dropdown-item>
 			</el-dropdown-menu>
 		</template>

@@ -8,19 +8,19 @@ import cache from '@/utils/cache'
 const service = axios.create({
 	baseURL: import.meta.env.VITE_API_URL as any,
 	timeout: 60000,
-	headers: { 'Content-Type': 'application/json;charset=UTF-8' }
+	headers: { 'Content-Type': 'application/json;charset=UTF-8'}
 })
 
 // 请求拦截器
 service.interceptors.request.use(
 	(config: any) => {
 		const userStore = store.userStore
+
 		if (userStore?.token) {
-			config.headers.Authorization = 'Bearer ' + userStore.token
+			config.headers.Authorization = userStore.token
 		}
 
 		config.headers['Accept-Language'] = cache.getLanguage()
-
 		// 追加时间戳，防止GET请求缓存
 		if (config.method?.toUpperCase() === 'GET') {
 			config.params = { ...config.params, t: new Date().getTime() }

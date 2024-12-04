@@ -24,11 +24,12 @@ export const userStore = defineStore('userStore', {
 		// 用户登录
 		async loginAction(loginForm: any) {
 			const res: any = await useLoginApi(loginForm)
-			this.setToken(res.access_token)
+			this.setToken(res.data)
 		},
 		// 获取用户信息
 		async getUserInfoAction() {
 			const { data } = await useUserInfoApi()
+			console.log("====================")
 			this.setUser(data)
 		},
 		// 用户退出
