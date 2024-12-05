@@ -5,7 +5,7 @@
 # Kafka Client Tool 前端代码
 
 ## 演示环境地址
-   [http://49.232.252.229/](http://)
+   [演示地址](http://49.232.252.229/)
 
 ## 系统界面
  **cluster** 
@@ -25,10 +25,10 @@
 ![输入图片说明](push.jpg)
 
 ## 后端代码
-   [ https://gitee.com/xingyusix/kafka-client](http://)
+   [后端代码](https://gitee.com/xingyusix/kafka-client)
 
 ## github代码
-    [https://github.com/xy1997/kafka-client](http://)
+    [后端代码](https://github.com/xy1997/kafka-client)
 
-    [https://github.com/xy1997/kafka-client-web](http://)
+    [前端代码](https://github.com/xy1997/kafka-client-web)
 
