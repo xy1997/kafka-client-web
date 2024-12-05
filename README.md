@@ -6,19 +6,19 @@
 
 ## 系统界面
  **cluster** 
-![输入图片说明](cluster.jpg)
+![输入图片说明](https://gitee.com/xingyusix/kafka-client/blob/master/cluster.jpg)
 
  **topic** 
-![输入图片说明](topic.jpg)
+![输入图片说明](https://gitee.com/xingyusix/kafka-client/blob/master/topic.jpg)
 
  **consumer** 
-![输入图片说明](consumer.jpg)
+![输入图片说明](https://gitee.com/xingyusix/kafka-client/blob/master/consumer.jpg)
 
  **poll** 
-![输入图片说明](poll.jpg)
+![输入图片说明](https://gitee.com/xingyusix/kafka-client/blob/master/pool.jpg)
 
  **push** 
-![输入图片说明](push.jpg)
+![输入图片说明](https://gitee.com/xingyusix/kafka-client/blob/master/push.jpg)
 
 ## 后端代码
    [ https://gitee.com/xingyusix/kafka-client](http://)
